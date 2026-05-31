@@ -1,9 +1,17 @@
-#include "../include/bst.h"
-#include "alg.cpp"
+// Copyright 2024 <Copyright Owner>
+
+#include <string>
+
+#include "bst.h"
+
+void makeTree(BST<std::string>& tree, const char* filename);  // NOLINT
+void printFreq(BST<std::string>& tree);  // NOLINT
 
 int main() {
-    BST<std::string> tree;
-    makeTree(tree, "src/war_peace.txt");
-    printFreq(tree);
-    return 0;
+  BST<std::string> tree;
+
+  makeTree(tree, "src/war_peace.txt");
+  printFreq(tree);
+
+  return 0;
 }
