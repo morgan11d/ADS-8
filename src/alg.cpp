@@ -3,6 +3,9 @@
 #include <string>
 #include <cctype>
 #include <iostream>
+#include <map>
+#include <vector>
+#include <algorithm>
 
 void makeTree(BST<std::string>& tree, const char* filename) {
     std::ifstream file(filename);
@@ -10,6 +13,7 @@ void makeTree(BST<std::string>& tree, const char* filename) {
         std::cout << "File error!" << std::endl;
         return;
     }
+    std::map<std::string, int> freq;
     std::string word;
     while (!file.eof()) {
         int ch = file.get();
@@ -18,15 +22,27 @@ void makeTree(BST<std::string>& tree, const char* filename) {
             word += std::tolower(static_cast<unsigned char>(ch));
         } else {
             if (!word.empty()) {
-                tree.insert(word);
+                freq[word]++;
                 word.clear();
             }
         }
     }
     if (!word.empty()) {
-        tree.insert(word);
+        freq[word]++;
     }
     file.close();
+    
+    std::vector<std::string> keys;
+    for (const auto& p : freq) {
+        keys.push_back(p.first);
+    }
+    std::sort(keys.begin(), keys.end());
+    
+    for (const auto& k : keys) {
+        for (int i = 0; i < freq[k]; i++) {
+            tree.insert(k);
+        }
+    }
 }
 
 void printFreq(BST<std::string>& tree) {
