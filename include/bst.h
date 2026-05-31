@@ -1,132 +1,142 @@
-#ifndef BST_H
-#define BST_H
+// Copyright 2024 <Copyright Owner>
 
-#include <iostream>
-#include <fstream>
-#include <string>
+#ifndef INCLUDE_BST_H_
+#define INCLUDE_BST_H_
+
+#include <algorithm>
+#include <vector>
 
 template <typename T>
 class BST {
-private:
-    struct Node {
-        T key;
-        int count;
-        Node* left;
-        Node* right;
-        Node(T k) : key(k), count(1), left(nullptr), right(nullptr) {}
-    };
+ public:
+  struct Item {
+    T value;
+    int count;
+  };
 
-    Node* root;
+  BST() : root_(nullptr), size_(0), total_(0) {}
 
-    Node* insert(Node* node, T value) {
-        if (!node) return new Node(value);
-        if (value < node->key)
-            node->left = insert(node->left, value);
-        else if (value > node->key)
-            node->right = insert(node->right, value);
-        else
-            node->count++;
-        return node;
+  BST(const BST&) = delete;
+
+  BST& operator=(const BST&) = delete;
+
+  ~BST() {
+    clear(root_);
+  }
+
+  void insert(const T& value) {
+    total_++;
+
+    if (root_ == nullptr) {
+      root_ = new Node(value);
+      size_++;
+      return;
     }
 
-    Node* insertWithCount(Node* node, T value, int cnt) {
-        if (!node) {
-            Node* newNode = new Node(value);
-            newNode->count = cnt;
-            return newNode;
+    Node* current = root_;
+
+    while (current != nullptr) {
+      if (value == current->value) {
+        current->count++;
+        return;
+      }
+
+      if (value < current->value) {
+        if (current->left == nullptr) {
+          current->left = new Node(value);
+          size_++;
+          return;
         }
-        if (value < node->key)
-            node->left = insertWithCount(node->left, value, cnt);
-        else if (value > node->key)
-            node->right = insertWithCount(node->right, value, cnt);
-        else
-            node->count = cnt;
-        return node;
-    }
-
-    int getDepth(Node* node) {
-        if (!node) return 0;
-        int leftDepth = getDepth(node->left);
-        int rightDepth = getDepth(node->right);
-        return 1 + (leftDepth > rightDepth ? leftDepth : rightDepth);
-    }
-
-    int searchNode(Node* node, T value) {
-        if (!node) return 0;
-        if (value < node->key)
-            return searchNode(node->left, value);
-        else if (value > node->key)
-            return searchNode(node->right, value);
-        else
-            return node->count;
-    }
-
-    void collectNodes(Node* node, Node** arr, int& index) {
-        if (!node) return;
-        collectNodes(node->left, arr, index);
-        arr[index++] = node;
-        collectNodes(node->right, arr, index);
-    }
-
-    int countNodes(Node* node) {
-        if (!node) return 0;
-        return 1 + countNodes(node->left) + countNodes(node->right);
-    }
-
-    void sortByFrequency(Node** arr, int size) {
-        for (int i = 0; i < size - 1; i++) {
-            for (int j = 0; j < size - i - 1; j++) {
-                if (arr[j]->count < arr[j + 1]->count) {
-                    Node* temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                }
-            }
+        current = current->left;
+      } else {
+        if (current->right == nullptr) {
+          current->right = new Node(value);
+          size_++;
+          return;
         }
+        current = current->right;
+      }
+    }
+  }
+
+  bool search(T value) const {
+    Node* current = root_;
+
+    while (current != nullptr) {
+      if (value == current->value) {
+        return true;
+      }
+
+      if (value < current->value) {
+        current = current->left;
+      } else {
+        current = current->right;
+      }
     }
 
-    void clearTree(Node* node) {
-        if (!node) return;
-        clearTree(node->left);
-        clearTree(node->right);
-        delete node;
+    return false;
+  }
+
+  int depth() const {
+    return depth(root_);
+  }
+
+  int size() const {
+    return size_;
+  }
+
+  int total() const {
+    return total_;
+  }
+
+  std::vector<Item> items() const {
+    std::vector<Item> result;
+    fillItems(root_, &result);
+    return result;
+  }
+
+ private:
+  struct Node {
+    T value;
+    int count;
+    Node* left;
+    Node* right;
+
+    explicit Node(const T& node_value)
+        : value(node_value), count(1), left(nullptr), right(nullptr) {}
+  };
+
+  Node* root_;
+  int size_;
+  int total_;
+
+  void clear(Node* node) {
+    if (node == nullptr) {
+      return;
     }
 
-public:
-    BST() : root(nullptr) {}
-    ~BST() { clearTree(root); }
+    clear(node->left);
+    clear(node->right);
+    delete node;
+  }
 
-    void insert(T value) {
-        root = insert(root, value);
+  int depth(Node* node) const {
+    if (node == nullptr) {
+      return 0;
     }
 
-    void insert(T value, int count) {
-        root = insertWithCount(root, value, count);
+    return 1 + std::max(depth(node->left), depth(node->right));
+  }
+
+  void fillItems(Node* node, std::vector<Item>* result) const {
+    if (node == nullptr) {
+      return;
     }
 
-    int depth() {
-        return getDepth(root);
-    }
-
-    int search(T value) {
-        return searchNode(root, value);
-    }
-
-    void printByFrequency(std::ostream& out = std::cout) {
-        int size = countNodes(root);
-        if (size == 0) return;
-        Node** nodes = new Node*[size];
-        int index = 0;
-        collectNodes(root, nodes, index);
-        sortByFrequency(nodes, size);
-        for (int i = 0; i < size; i++) {
-            out << nodes[i]->key << " " << nodes[i]->count << std::endl;
-        }
-        delete[] nodes;
-    }
+    fillItems(node->left, result);
+    result->push_back({node->value, node->count});
+    fillItems(node->right, result);
+  }
 };
 
-void makeTree(BST<std::string>& tree, const char* filename);
-void printFreq(BST<std::string>& tree);
-
-#endif
+#endif  // INCLUDE_BST_H_
