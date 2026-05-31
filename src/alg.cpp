@@ -4,8 +4,6 @@
 #include <cctype>
 #include <iostream>
 #include <map>
-#include <vector>
-#include <algorithm>
 
 void makeTree(BST<std::string>& tree, const char* filename) {
     std::ifstream file(filename);
@@ -32,16 +30,8 @@ void makeTree(BST<std::string>& tree, const char* filename) {
     }
     file.close();
     
-    std::vector<std::string> keys;
     for (const auto& p : freq) {
-        keys.push_back(p.first);
-    }
-    std::sort(keys.begin(), keys.end());
-    
-    for (const auto& k : keys) {
-        for (int i = 0; i < freq[k]; i++) {
-            tree.insert(k);
-        }
+        tree.insert(p.first, p.second);
     }
 }
 
