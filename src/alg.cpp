@@ -1,44 +1,80 @@
-#include "../include/bst.h"
+// Copyright 2024 <Copyright Owner>
+
+#include <algorithm>
 #include <fstream>
-#include <string>
-#include <cctype>
 #include <iostream>
+#include <string>
+#include <vector>
 
-bool isLatinAlpha(int ch) {
-    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+#include "bst.h"
+
+namespace {
+
+bool isLatinLetter(int ch) {
+  return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
 }
 
-void makeTree(BST<std::string>& tree, const char* filename) {
-    std::ifstream file(filename);
-    if (!file) {
-        std::cout << "File error!" << std::endl;
-        return;
-    }
-    std::string word;
-    int ch;
-    while ((ch = file.get()) != EOF) {
-        if (isLatinAlpha(ch)) {
-            word += std::tolower(ch);
-        } else {
-            if (!word.empty()) {
-                tree.insert(word);
-                word.clear();
-            }
-        }
-    }
-    if (!word.empty()) {
-        tree.insert(word);
-    }
-    file.close();
+char toLowerLetter(int ch) {
+  if (ch >= 'A' && ch <= 'Z') {
+    return static_cast<char>(ch - 'A' + 'a');
+  }
+
+  return static_cast<char>(ch);
 }
 
-void printFreq(BST<std::string>& tree) {
-    std::ofstream outFile("result/freq.txt");
-    if (!outFile) {
-        std::cout << "Cannot create output file!" << std::endl;
-        return;
+bool compareByFrequency(const BST<std::string>::Item& left,
+                        const BST<std::string>::Item& right) {
+  if (left.count != right.count) {
+    return left.count > right.count;
+  }
+
+  return left.value < right.value;
+}
+
+}  // namespace
+
+void makeTree(BST<std::string>& tree, const char* filename) {  // NOLINT
+  std::ifstream file(filename, std::ios::binary);
+
+  if (!file) {
+    std::cout << "File error!" << std::endl;
+    return;
+  }
+
+  std::string word;
+  char ch = 0;
+
+  while (file.get(ch)) {
+    int code = static_cast<unsigned char>(ch);
+
+    if (isLatinLetter(code)) {
+      word.push_back(toLowerLetter(code));
+    } else if (!word.empty()) {
+      tree.insert(word);
+      word.clear();
     }
-    tree.printByFrequency(std::cout);
-    tree.printByFrequency(outFile);
-    outFile.close();
+  }
+
+  if (!word.empty()) {
+    tree.insert(word);
+  }
+
+  file.close();
+}
+
+void printFreq(BST<std::string>& tree) {  // NOLINT
+  std::vector<BST<std::string>::Item> values = tree.items();
+  std::sort(values.begin(), values.end(), compareByFrequency);
+
+  std::ofstream result("result/freq.txt");
+
+  for (const BST<std::string>::Item& item : values) {
+    std::cout << item.value << " " << item.count << std::endl;
+
+    if (result) {
+      result << item.value << " " << item.count << std::endl;
+    }
+  }
+
+  result.close();
 }
