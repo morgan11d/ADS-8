@@ -4,6 +4,16 @@
 #include <cctype>
 #include <iostream>
 #include <map>
+#include <vector>
+#include <algorithm>
+
+void insertBalanced(BST<std::string>& tree, const std::vector<std::pair<std::string, int>>& items, int start, int end) {
+    if (start > end) return;
+    int mid = (start + end) / 2;
+    tree.insert(items[mid].first, items[mid].second);
+    insertBalanced(tree, items, start, mid - 1);
+    insertBalanced(tree, items, mid + 1, end);
+}
 
 void makeTree(BST<std::string>& tree, const char* filename) {
     std::ifstream file(filename);
@@ -30,9 +40,8 @@ void makeTree(BST<std::string>& tree, const char* filename) {
     }
     file.close();
     
-    for (const auto& p : freq) {
-        tree.insert(p.first, p.second);
-    }
+    std::vector<std::pair<std::string, int>> items(freq.begin(), freq.end());
+    insertBalanced(tree, items, 0, items.size() - 1);
 }
 
 void printFreq(BST<std::string>& tree) {
