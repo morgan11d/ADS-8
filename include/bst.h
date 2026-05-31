@@ -29,6 +29,21 @@ private:
         return node;
     }
 
+    Node* insertWithCount(Node* node, T value, int cnt) {
+        if (!node) {
+            Node* newNode = new Node(value);
+            newNode->count = cnt;
+            return newNode;
+        }
+        if (value < node->key)
+            node->left = insertWithCount(node->left, value, cnt);
+        else if (value > node->key)
+            node->right = insertWithCount(node->right, value, cnt);
+        else
+            node->count = cnt;
+        return node;
+    }
+
     int getDepth(Node* node) {
         if (!node) return 0;
         int leftDepth = getDepth(node->left);
@@ -83,6 +98,10 @@ public:
 
     void insert(T value) {
         root = insert(root, value);
+    }
+
+    void insert(T value, int count) {
+        root = insertWithCount(root, value, count);
     }
 
     int depth() {
