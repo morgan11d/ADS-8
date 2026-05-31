@@ -59,12 +59,12 @@ class BST {
     }
   }
 
-  bool search(T value) const {
+  int search(const T& value) const {
     Node* current = root_;
 
     while (current != nullptr) {
       if (value == current->value) {
-        return true;
+        return current->count;
       }
 
       if (value < current->value) {
@@ -74,11 +74,15 @@ class BST {
       }
     }
 
-    return false;
+    return 0;
   }
 
   int depth() const {
-    return depth(root_);
+    if (root_ == nullptr) {
+      return 0;
+    }
+
+    return depth(root_) - 1;
   }
 
   int size() const {
