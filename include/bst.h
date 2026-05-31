@@ -36,12 +36,14 @@ private:
         return 1 + (leftDepth > rightDepth ? leftDepth : rightDepth);
     }
 
-    Node* searchNode(Node* node, T value) {
-        if (!node || node->key == value) return node;
+    int searchNode(Node* node, T value) {
+        if (!node) return 0;
         if (value < node->key)
             return searchNode(node->left, value);
-        else
+        else if (value > node->key)
             return searchNode(node->right, value);
+        else
+            return node->count;
     }
 
     void collectNodes(Node* node, Node** arr, int& index) {
@@ -87,7 +89,7 @@ public:
         return getDepth(root);
     }
 
-    Node* search(T value) {
+    int search(T value) {
         return searchNode(root, value);
     }
 
@@ -104,5 +106,8 @@ public:
         delete[] nodes;
     }
 };
+
+void makeTree(BST<std::string>& tree, const char* filename);
+void printFreq(BST<std::string>& tree);
 
 #endif
